@@ -57,7 +57,6 @@ def download_excel():
     conn.close()
     
     file_path = "static/exports/user_data.xlsx"
-    os.makedirs(file_path, exist_ok=True)
     df.to_excel(file_path, index=False)
 
     return send_file(file_path, as_attachment=True)
