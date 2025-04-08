@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>User Info Form</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Generate ID card</h1>
+            <p>Fill out the details to generate your ID card !</p>
+        </div>
+        <form class="contact-form" method="POST" enctype="multipart/form-data">
+            <div class="input-group">
+                <div class="field">
+                    <label for="firstName">Full Name <span class="required">*</span></label>
+                    <input type="text" id="firstName" name="name" placeholder="Enter your Name" required>
+                </div>
+                <div class="field">
+                    <label for="lastName">Designation <span class="required">*</span></label>
+                    <input type="text" id="lastName" name="designation" placeholder="Enter your Designation" required>
+                </div>
+            </div>
+
+            <div class="field">
+                <label for="email">Email <span class="required">*</span></label>
+                <input type="email" id="email" name="email" placeholder="Enter your Email" required>
+            </div>
+
+            <div class="field">
+                <label for="phone">Phone <span class="required">*</span></label>
+                <input type="tel" id="phone" name="phone" placeholder="Enter your Phone Number" required>
+            </div>
+
+            <div class="field">
+                <label for="comments">Address</label>
+                <textarea id="address" name="address" rows="4"></textarea>
+            </div>
+
+            <div class="field">
+                <label for="photo">Upload Passport Photo:</label>
+                <input type="file" name="photo" accept="image/*" id="photoInput" required><br><br>
+                <div>
+                    <img id="preview" style="max-width: 100%;" />
+                </div>
+                <input type="hidden" name="cropped_image" id="croppedImageInput">
+
+            </div>
+
+
+
+            <div class="submit-row">
+                <button type="submit">Generate ID</button>
+            </div>
+       
+
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        {% for category, message in messages %}
+        <div class="alert alert-{{ category }} field" style="margin-top: 1em;">
+            {{ message }}
+        </div>
+        {% endfor %}
+        {% endif %}
+        {% endwith %}
+
+
+
+        {% if download_url %}
+<p><strong class="field" style="margin-top: 1em; margin-bottom: 1em;">Your ID is ready:</strong></p>
+<a href="{{ url_for('download_file', filename=download_url.split('/')[-1]) }}" download>
+    <button type="button">
+        ⬇️ Download ID Card
+    </button>
+</a>
+
+
+
+        </p>
+        <p class="field">
+            For more details join whatsapp group
+        </p>
+        <button style="background-color: #25D366; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin-top: 1em;">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" alt="WhatsApp" style="height: 20px; vertical-align: middle;"> Join Group Now !
+          </button>
+          
+        {% endif %}
+
+
+    </form>
+
+    </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+
+    <script>
+        let cropper;
+        const photoInput = document.getElementById('photoInput');
+        const preview = document.getElementById('preview');
+        const croppedImageInput = document.getElementById('croppedImageInput');
+
+        photoInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            const url = URL.createObjectURL(file);
+            preview.src = url;
+
+            if (cropper) cropper.destroy();
+            cropper = new Cropper(preview, {
+                aspectRatio: 1, // 1:1 for square
+                viewMode: 1,
+                autoCropArea: 1,
+                cropend: function () {
+                    const canvas = cropper.getCroppedCanvas({
+                        width: 500,
+                        height: 500
+                    });
+                    croppedImageInput.value = canvas.toDataURL('image/png');
+                }
+            });
+        });
+
+        // Remove query parameters from the URL without reloading the page
+        if (window.location.search) {
+            const cleanUrl = window.location.origin + window.location.pathname;
+            window.history.replaceState({}, document.title, cleanUrl);
+        }
+    </script>
+
+
+</body>
+
+</html>
