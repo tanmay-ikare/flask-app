@@ -55,8 +55,9 @@ def download_excel():
     conn = sqlite3.connect('database.db')
     df = pd.read_sql_query("SELECT name, designation, phone, email, address FROM users", conn)
     conn.close()
-
+    
     file_path = "static/exports/user_data.xlsx"
+    os.makedirs(file_path, exist_ok=True)
     df.to_excel(file_path, index=False)
 
     return send_file(file_path, as_attachment=True)
