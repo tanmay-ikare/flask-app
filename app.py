@@ -71,7 +71,8 @@ def create_id(name, designation, phone_number, email, address, photo):
     d= ImageDraw.Draw(image)
     
     def add_text(text,text_pos,font_size):
-        font = ImageFont.truetype("/System/Library/Fonts/Supplemental/Arial.ttf",font_size)
+        font_path = os.path.join("fonts", "Arial.ttf")
+        font = ImageFont.truetype(font_path,font_size)
         d.text(text_pos,text,font=font,fill="black")
 
     add_text(name,(158,535),45)
