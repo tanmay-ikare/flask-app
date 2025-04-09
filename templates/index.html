@@ -129,33 +129,83 @@
         const photoInput = document.getElementById('photoInput');
         const preview = document.getElementById('preview');
         const croppedImageInput = document.getElementById('croppedImageInput');
-
-        photoInput.addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            const url = URL.createObjectURL(file);
-            preview.src = url;
-
-            if (cropper) cropper.destroy();
-            cropper = new Cropper(preview, {
-                aspectRatio: 1, // 1:1 for square
-                viewMode: 1,
-                autoCropArea: 1,
-                cropend: function () {
-                    const canvas = cropper.getCroppedCanvas({
-                        width: 500,
-                        height: 500
-                    });
-                    croppedImageInput.value = canvas.toDataURL('image/png');
-                }
-            });
-        });
-
-        // Remove query parameters from the URL without reloading the page
-        if (window.location.search) {
-            const cleanUrl = window.location.origin + window.location.pathname;
-            window.history.replaceState({}, document.title, cleanUrl);
+      
+        // Resize large images before passing them to Cropper
+        function resizeImage(file, maxSize, callback) {
+          const img = new Image();
+          const reader = new FileReader();
+      
+          reader.onload = function (e) {
+            img.src = e.target.result;
+          };
+      
+          img.onload = function () {
+            const canvas = document.createElement('canvas');
+            let width = img.width;
+            let height = img.height;
+      
+            // Maintain aspect ratio
+            if (width > height) {
+              if (width > maxSize) {
+                height *= maxSize / width;
+                width = maxSize;
+              }
+            } else {
+              if (height > maxSize) {
+                width *= maxSize / height;
+                height = maxSize;
+              }
+            }
+      
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, width, height);
+            callback(canvas.toDataURL('image/png'));
+          };
+      
+          reader.readAsDataURL(file);
         }
-    </script>
+      
+        photoInput.addEventListener('change', (e) => {
+          const file = e.target.files[0];
+          if (!file) return;
+      
+          resizeImage(file, 2000, (resizedDataUrl) => {
+            preview.src = resizedDataUrl;
+      
+            if (cropper) cropper.destroy();
+      
+            cropper = new Cropper(preview, {
+              aspectRatio: 1,
+              viewMode: 1,
+              autoCropArea: 1,
+              checkOrientation: false, // Avoid rotation issues
+              ready: function () {
+                // Optional: Perform initial cropping once cropper is ready
+                updateCroppedImage();
+              },
+              cropend: function () {
+                updateCroppedImage();
+              }
+            });
+          });
+        });
+      
+        function updateCroppedImage() {
+          try {
+            const canvas = cropper.getCroppedCanvas({
+              width: 500,
+              height: 500
+            });
+            croppedImageInput.value = canvas.toDataURL('image/png');
+          } catch (err) {
+            console.error("Cropping failed:", err);
+            alert("Error cropping image. Please select a smaller image.");
+          }
+        }
+      </script>
+      
 
 
 </body>
