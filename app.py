@@ -8,9 +8,11 @@ from functools import wraps
 from werkzeug.utils import secure_filename
 import base64
 from io import BytesIO
+from langdetect import detect
 
 
 app = Flask(__name__)
+app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024 
 app.secret_key = 'your_secret_key'
 
 
@@ -62,16 +64,25 @@ def download_excel():
     return send_file(file_path, as_attachment=True)
 
 
-
-
-
+LANGUAGE_FONT_MAP = {
+    "en": "english.ttf",
+    "hi": "marathi.ttf",
+    "mr": "marathi.ttf"
+}
 
 def create_id(name, designation, phone_number, email, address, photo):
     image = Image.open("id_template.png")
     d= ImageDraw.Draw(image)
     
     def add_text(text,text_pos,font_size):
-        font_path = os.path.join("fonts", "Arial.ttf")
+        try:
+        # Detect the language of the input text
+            detected_lang = detect(text)
+        except Exception:
+            detected_lang = "en"
+            
+        font_file = LANGUAGE_FONT_MAP.get(detected_lang, LANGUAGE_FONT_MAP["en"])
+        font_path = os.path.join("fonts", font_file)
         font = ImageFont.truetype(font_path,font_size)
         d.text(text_pos,text,font=font,fill="black")
 
