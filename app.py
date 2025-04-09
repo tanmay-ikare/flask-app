@@ -65,7 +65,7 @@ def download_excel():
 
 
 LANGUAGE_FONT_MAP = {
-    "en": "english.ttf",
+    "en": "/Users/tanmay.ikare/Documents/tanmay-personal/id-card/fonts/english.ttf",
     "hi": "marathi.ttf",
     "mr": "marathi.ttf"
 }
@@ -116,21 +116,13 @@ def form():
         phone = request.form['phone']
         email = request.form['email']
         address = request.form['address']
-        cropped_image_data = request.form['cropped_image']
+        photo = request.files.get('photo')
 
-    # Decode and save cropped image
-        if ',' in cropped_image_data:
-            header, encoded = cropped_image_data.split(",", 1)
-        else:
-            flash('Invalid image data received.', 'danger')
-            return redirect(url_for('form'))
-        binary_data = base64.b64decode(encoded)
-        image = Image.open(BytesIO(binary_data))
     
     # Save image to static folder
         filename = secure_filename(f"{name.replace(' ', '_')}_photo.png")
         image_path = os.path.join('static/ids', filename)
-        image.save(image_path)
+        photo.save(image_path)
 
         
         # Save to DB

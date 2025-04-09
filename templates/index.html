@@ -128,36 +128,42 @@
         let cropper;
         const photoInput = document.getElementById('photoInput');
         const preview = document.getElementById('preview');
-        const croppedImageInput = document.getElementById('croppedImageInput');
-
+    
         photoInput.addEventListener('change', (e) => {
             const file = e.target.files[0];
             const url = URL.createObjectURL(file);
             preview.src = url;
-
+    
             if (cropper) cropper.destroy();
             cropper = new Cropper(preview, {
-                aspectRatio: 1, // 1:1 for square
+                aspectRatio: 1,
                 viewMode: 1,
-                autoCropArea: 1,
-                cropend: function () {
-                    const canvas = cropper.getCroppedCanvas({
-                        width: 500,
-                        height: 500
-                    });
-                    croppedImageInput.value = canvas.toDataURL('image/png');
-                }
+                autoCropArea: 1
             });
         });
-
-        // Remove query parameters from the URL without reloading the page
-        if (window.location.search) {
-            const cleanUrl = window.location.origin + window.location.pathname;
-            window.history.replaceState({}, document.title, cleanUrl);
-        }
+    
+        document.getElementById('uploadForm').addEventListener('submit', async function (e) {
+            e.preventDefault();
+    
+            const formData = new FormData(this);
+    
+            if (cropper) {
+                const canvas = cropper.getCroppedCanvas({ width: 500, height: 500 });
+                const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+                formData.append('photo', blob, 'cropped.png');
+            }
+    
+            const response = await fetch("/", {
+                method: "POST",
+                body: formData
+            });
+    
+            if (response.redirected) {
+                window.location.href = response.url;
+            }
+        });
     </script>
-
-
+    
 </body>
 
 </html>
