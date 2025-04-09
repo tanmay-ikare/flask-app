@@ -128,92 +128,34 @@
         let cropper;
         const photoInput = document.getElementById('photoInput');
         const preview = document.getElementById('preview');
-        const croppedImageOutput = document.getElementById('croppedImageOutput');
-      
-        function resizeImage(file, maxSize, callback) {
-          const img = new Image();
-          const reader = new FileReader();
-      
-          reader.onload = function (e) {
-            img.src = e.target.result;
-          };
-      
-          img.onload = function () {
-            const canvas = document.createElement('canvas');
-            let width = img.width;
-            let height = img.height;
-      
-            if (width > height) {
-              if (width > maxSize) {
-                height *= maxSize / width;
-                width = maxSize;
-              }
-            } else {
-              if (height > maxSize) {
-                width *= maxSize / height;
-                height = maxSize;
-              }
-            }
-      
-            canvas.width = width;
-            canvas.height = height;
-            const ctx = canvas.getContext('2d');
-            ctx.drawImage(img, 0, 0, width, height);
-            callback(canvas.toDataURL('image/jpeg', 0.7)); // Compressed JPEG
-          };
-      
-          reader.readAsDataURL(file);
-        }
-      
+        const croppedImageInput = document.getElementById('croppedImageInput');
+
         photoInput.addEventListener('change', (e) => {
-          const file = e.target.files[0];
-          if (!file) return;
-      
-          resizeImage(file, 2000, (resizedDataUrl) => {
-            preview.src = resizedDataUrl;
-      
+            const file = e.target.files[0];
+            const url = URL.createObjectURL(file);
+            preview.src = url;
+
             if (cropper) cropper.destroy();
-      
             cropper = new Cropper(preview, {
-              aspectRatio: 1,
-              viewMode: 1,
-              autoCropArea: 1,
-              checkOrientation: false,
+                aspectRatio: 1, // 1:1 for square
+                viewMode: 1,
+                autoCropArea: 1,
+                cropend: function () {
+                    const canvas = cropper.getCroppedCanvas({
+                        width: 500,
+                        height: 500
+                    });
+                    croppedImageInput.value = canvas.toDataURL('image/png');
+                }
             });
-          });
         });
-      
-        document.getElementById('uploadBtn').addEventListener('click', () => {
-          if (!cropper) return;
-      
-          cropper.getCroppedCanvas({
-            width: 500,
-            height: 500
-          }).toBlob((blob) => {
-            const formData = new FormData();
-            formData.append('croppedImage', blob, 'avatar.jpg');
-      
-            // Now POST to your backend (replace with your real URL)
-            fetch('/upload', {
-              method: 'POST',
-              body: formData
-            }).then(response => {
-              if (response.ok) {
-                return response.text();
-              } else {
-                throw new Error("Upload failed.");
-              }
-            }).then(result => {
-              croppedImageOutput.innerText = "Upload successful!";
-            }).catch(err => {
-              console.error(err);
-              croppedImageOutput.innerText = "Error uploading image.";
-            });
-          }, 'image/jpeg', 0.7); // Use JPEG with compression
-        });
-      </script>
-      
-      
+
+        // Remove query parameters from the URL without reloading the page
+        if (window.location.search) {
+            const cleanUrl = window.location.origin + window.location.pathname;
+            window.history.replaceState({}, document.title, cleanUrl);
+        }
+    </script>
 
 
 </body>
