@@ -65,7 +65,7 @@ def download_excel():
 
 
 LANGUAGE_FONT_MAP = {
-    "en": "/Users/tanmay.ikare/Documents/tanmay-personal/id-card/fonts/english.ttf",
+    "en": "english.ttf",
     "hi": "marathi.ttf",
     "mr": "marathi.ttf"
 }
