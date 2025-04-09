@@ -128,9 +128,8 @@
         let cropper;
         const photoInput = document.getElementById('photoInput');
         const preview = document.getElementById('preview');
-        const croppedImageInput = document.getElementById('croppedImageInput');
+        const croppedImageOutput = document.getElementById('croppedImageOutput');
       
-        // Resize large images before passing them to Cropper
         function resizeImage(file, maxSize, callback) {
           const img = new Image();
           const reader = new FileReader();
@@ -144,7 +143,6 @@
             let width = img.width;
             let height = img.height;
       
-            // Maintain aspect ratio
             if (width > height) {
               if (width > maxSize) {
                 height *= maxSize / width;
@@ -161,7 +159,7 @@
             canvas.height = height;
             const ctx = canvas.getContext('2d');
             ctx.drawImage(img, 0, 0, width, height);
-            callback(canvas.toDataURL('image/png'));
+            callback(canvas.toDataURL('image/jpeg', 0.7)); // Compressed JPEG
           };
       
           reader.readAsDataURL(file);
@@ -180,31 +178,41 @@
               aspectRatio: 1,
               viewMode: 1,
               autoCropArea: 1,
-              checkOrientation: false, // Avoid rotation issues
-              ready: function () {
-                // Optional: Perform initial cropping once cropper is ready
-                updateCroppedImage();
-              },
-              cropend: function () {
-                updateCroppedImage();
-              }
+              checkOrientation: false,
             });
           });
         });
       
-        function updateCroppedImage() {
-          try {
-            const canvas = cropper.getCroppedCanvas({
-              width: 500,
-              height: 500
+        document.getElementById('uploadBtn').addEventListener('click', () => {
+          if (!cropper) return;
+      
+          cropper.getCroppedCanvas({
+            width: 500,
+            height: 500
+          }).toBlob((blob) => {
+            const formData = new FormData();
+            formData.append('croppedImage', blob, 'avatar.jpg');
+      
+            // Now POST to your backend (replace with your real URL)
+            fetch('/upload', {
+              method: 'POST',
+              body: formData
+            }).then(response => {
+              if (response.ok) {
+                return response.text();
+              } else {
+                throw new Error("Upload failed.");
+              }
+            }).then(result => {
+              croppedImageOutput.innerText = "Upload successful!";
+            }).catch(err => {
+              console.error(err);
+              croppedImageOutput.innerText = "Error uploading image.";
             });
-            croppedImageInput.value = canvas.toDataURL('image/png');
-          } catch (err) {
-            console.error("Cropping failed:", err);
-            alert("Error cropping image. Please select a smaller image.");
-          }
-        }
+          }, 'image/jpeg', 0.7); // Use JPEG with compression
+        });
       </script>
+      
       
 
 
