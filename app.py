@@ -9,7 +9,7 @@ from werkzeug.utils import secure_filename
 import base64
 from io import BytesIO
 from langdetect import detect
-
+from twilio.rest import Client
 
 app = Flask(__name__)
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024 
@@ -41,9 +41,8 @@ def init_db():
     c.execute('''CREATE TABLE IF NOT EXISTS users (
                  id INTEGER PRIMARY KEY AUTOINCREMENT,
                  name TEXT NOT NULL,
-                 designation TEXT NOT NULL,
+                 DOB TEXT NOT NULL,
                  phone TEXT NOT NULL,
-                 email TEXT NOT NULL,
                  address TEXT NOT NULL,
                 image_path TEXT
                  )''')
@@ -55,7 +54,7 @@ init_db()
 @app.route('/download_excel')
 def download_excel():
     conn = sqlite3.connect('database.db')
-    df = pd.read_sql_query("SELECT name, designation, phone, email, address FROM users", conn)
+    df = pd.read_sql_query("SELECT name, DOB, phone, address FROM users", conn)
     conn.close()
     
     file_path = "static/exports/user_data.xlsx"
@@ -66,11 +65,12 @@ def download_excel():
 
 LANGUAGE_FONT_MAP = {
     "en": "english.ttf",
+    #"en": "/Users/tanmay.ikare/Documents/tanmay-personal/id-card/fonts/english.ttf",
     "hi": "marathi.ttf",
     "mr": "marathi.ttf"
 }
 
-def create_id(name, designation, phone_number, email, address, photo):
+def create_id(name, DOB, phone_number, address, photo):
     image = Image.open("id_template.png")
     d= ImageDraw.Draw(image)
     
@@ -86,17 +86,15 @@ def create_id(name, designation, phone_number, email, address, photo):
         font = ImageFont.truetype(font_path,font_size)
         d.text(text_pos,text,font=font,fill="black")
 
-    add_text(name,(158,535),45)
-    add_text(designation,(265,585),30)
-    add_text(phone_number,(90,700),30)
-    add_text(email,(90,782),30)
-    add_text(address,(90,882),30)
-    
+    add_text(name,(303,303),45)
+    add_text(DOB,(269,437),30)
+    add_text(phone_number,(479,380),30)
+    add_text(address,(161,500),45)
     
     passport_image = Image.open(photo).convert("RGBA")
-    passport_image = passport_image.resize((350, 350))  # optional
+    passport_image = passport_image.resize((163,182))  # optional
     
-    image.paste(passport_image, (130, 150), passport_image)
+    image.paste(passport_image, (948,294), passport_image)
     filename = f"{name}_{int(time.time())}.png"
     output_path = os.path.join("static","output_ids", filename)
     image.save(output_path)
@@ -112,9 +110,8 @@ def form():
 
     if request.method == 'POST':
         name = request.form['name']
-        designation = request.form['designation']
+        DOB = request.form['DOB']
         phone = request.form['phone']
-        email = request.form['email']
         address = request.form['address']
         photo = request.files.get('photo')
 
@@ -128,16 +125,28 @@ def form():
         # Save to DB
         conn = sqlite3.connect('database.db')
         c = conn.cursor()
-        c.execute("INSERT INTO users (name, designation, phone, email, address, image_path) VALUES (?, ?, ?, ?, ?, ?)",
-                  (name, designation, phone, email, address, image_path))
+        c.execute("INSERT INTO users (name, DOB, phone, address, image_path) VALUES (?, ?, ?, ?, ?)",
+                  (name, DOB, phone, address, image_path))
         conn.commit()
         conn.close()
 
         # Generate ID and get file path
-        file_path = create_id(name, designation, phone, email, address, image_path)
+        file_path = create_id(name, DOB, phone, address, image_path)
         download_url = '/' + file_path  # Flask uses static/ prefix by default
 
         flash('Form submitted successfully! Your ID has been created.', 'success')
+        
+        #sms service
+        account_sid = "AC01aba7f1d4e926f665cd23ebd85e581b"
+        auth_token = "99f66b851fa29a227dbb0d316ba1887e"
+        client = Client(account_sid, auth_token)
+        phone_number = "+91"+str(phone)
+        message_body = "Thank you for registration at Mayboli Pratishthan for year 2025-26. For further details join following whatsapp group : https://chat.whatsapp.com/FgIZjeiZc8IHCce1meV2Nh. Download your generated ID card by clicking below :" + download_url
+        message = client.messages.create(
+            body=message_body,
+            from_="+14235893521",
+            to=phone_number,
+        )
         
         # Redirect with download url as a query parameter
         return redirect(url_for('form', download=download_url))
@@ -165,4 +174,4 @@ def download_file(filename):
     return send_file(file_path, as_attachment=True)
 
 if __name__ == '__main__':
-    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
+    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)), debug=True)
