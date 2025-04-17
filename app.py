@@ -141,7 +141,7 @@ def form():
         auth_token = os.getenv('TWILIO_AUTH_TOKEN')
         client = Client(account_sid, auth_token)
         phone_number = "+91"+str(phone)
-        message_body = "Thank you for registration at Mayboli Pratishthan for year 2025-26. For further details join following whatsapp group : https://chat.whatsapp.com/FgIZjeiZc8IHCce1meV2Nh. Download your generated ID card by clicking below : " + "https://demoid-bytanmay.onrender.com/"+download_url
+        message_body = "Thank you for registration at Mayboli Pratishthan for year 2025-26. For further details join following whatsapp group : https://chat.whatsapp.com/FgIZjeiZc8IHCce1meV2Nh. Download your generated ID card by clicking below : " + "https://demoid-bytanmay.onrender.com"+download_url
         message = client.messages.create(
             body=message_body,
             from_="+14235893521",
