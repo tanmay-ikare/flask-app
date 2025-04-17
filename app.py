@@ -95,7 +95,7 @@ def create_id(name, DOB, phone_number, address, photo):
     passport_image = passport_image.resize((163,182))  # optional
     
     image.paste(passport_image, (948,294), passport_image)
-    filename = f"{name}_{int(time.time())}.png"
+    filename = f"{phone_number}_{int(time.time())}.png"
     output_path = os.path.join("static","output_ids", filename)
     image.save(output_path)
     return output_path
