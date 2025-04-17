@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, flash, Response, send_file, url_for
+from flask import Flask, render_template, request, redirect, flash, Response, send_file, url_for, send_from_directory
 import sqlite3
 from PIL import Image,ImageDraw,ImageFont
 import os
@@ -170,8 +170,11 @@ def admin():
 
 @app.route('/download/<filename>')
 def download_file(filename):
-    file_path = os.path.join('static', 'output_ids', filename)
-    return send_file(file_path, as_attachment=True)
+    return send_from_directory(
+        directory='static/output_ids',
+        path=filename,
+        as_attachment=True
+    )
 
 if __name__ == '__main__':
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
