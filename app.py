@@ -137,8 +137,8 @@ def form():
         flash('Form submitted successfully! Your ID has been created.', 'success')
         
         #sms service
-        account_sid = "AC01aba7f1d4e926f665cd23ebd85e581b"
-        auth_token = "99f66b851fa29a227dbb0d316ba1887e"
+        account_sid = os.getenv('TWILIO_ACCOUNT_SID')
+        auth_token = os.getenv('TWILIO_AUTH_TOKEN')
         client = Client(account_sid, auth_token)
         phone_number = "+91"+str(phone)
         message_body = "Thank you for registration at Mayboli Pratishthan for year 2025-26. For further details join following whatsapp group : https://chat.whatsapp.com/FgIZjeiZc8IHCce1meV2Nh. Download your generated ID card by clicking below :" + download_url
