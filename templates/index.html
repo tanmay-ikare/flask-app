@@ -233,7 +233,7 @@
             // Example: formData.append('username', document.getElementById('username').value);
 
             if (cropper) {
-                const canvas = cropper.getCroppedCanvas({ width: 500, height: 500 });
+                const canvas = cropper.getCroppedCanvas({ width: 163,height: 182 });
                 const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
                 formData.append('photo', blob, 'cropped.png');
             }
