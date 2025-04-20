@@ -70,7 +70,7 @@ LANGUAGE_FONT_MAP = {
     "mr": "marathi.ttf"
 }
 
-def create_id(name, DOB, phone_number, address, photo):
+def create_id(name, DOB, phone_number, address, photo,id):
     image = Image.open("id_template.png")
     d= ImageDraw.Draw(image)
     
@@ -90,6 +90,7 @@ def create_id(name, DOB, phone_number, address, photo):
     add_text(DOB,(269,437),30)
     add_text(phone_number,(479,380),30)
     add_text(address,(161,500),45)
+    add_text(id,(873,254),30)
     
     passport_image = Image.open(photo).convert("RGBA")
     passport_image = passport_image.resize((163,182))  # optional
@@ -107,6 +108,7 @@ def create_id(name, DOB, phone_number, address, photo):
 @app.route('/', methods=['GET', 'POST'])
 def form():
     download_url = None  # Define it at the start
+    id = 1
 
     if request.method == 'POST':
         name = request.form['name']
@@ -127,11 +129,12 @@ def form():
         c = conn.cursor()
         c.execute("INSERT INTO users (name, DOB, phone, address, image_path) VALUES (?, ?, ?, ?, ?)",
                   (name, DOB, phone, address, image_path))
+        user_id = c.lastrowid
         conn.commit()
         conn.close()
 
         # Generate ID and get file path
-        file_path = create_id(name, DOB, phone, address, image_path)
+        file_path = create_id(name, DOB, phone, address, image_path,user_id)
         download_url = '/' + file_path  # Flask uses static/ prefix by default
 
         flash('Form submitted successfully! Your ID has been created.', 'success')

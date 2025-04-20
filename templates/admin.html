@@ -97,7 +97,7 @@
             style="background-color: #25D366; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin-top: 1em; margin-bottom: 1em;"
             type="submit">
             <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/73/Microsoft_Excel_2013-2019_logo.svg/640px-Microsoft_Excel_2013-2019_logo.svg.png"
-                alt="WhatsApp" style="height: 20px; vertical-align: middle;"> Download as Excel
+                alt="excel" style="height: 20px; vertical-align: middle;"> Download as Excel
         </button>
     </form>
 </div>
@@ -106,10 +106,9 @@
             <tr>
                 <th>ID</th>
                 <th>Name</th>
-                <th>Designation</th>
+                <th>Date of Birth</th>
                 <th>Phone</th>
                 <th>Email</th>
-                <th>Address</th>
                 <th>Photo</th>
             </tr>
         </thead>
@@ -118,9 +117,8 @@
             <tr>
                 <td>{{ user.id }}</td>
                 <td>{{ user.name }}</td>
-                <td>{{ user.designation }}</td>
+                <td>{{ user.DOB }}</td>
                 <td>{{ user.phone }}</td>
-                <td>{{ user.email }}</td>
                 <td>{{ user.address }}</td>
                 <td><img src="{{ user['image_path'] }}" width="80" height="80" alt="ID Photo"></td>
             </tr>
