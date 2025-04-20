@@ -90,7 +90,7 @@ def create_id(name, DOB, phone_number, address, photo,id):
     add_text(DOB,(269,437),30)
     add_text(phone_number,(479,380),30)
     add_text(address,(161,500),45)
-    add_text(id,(873,254),30)
+    add_text(str(id),(873,254),30)
     
     passport_image = Image.open(photo).convert("RGBA")
     passport_image = passport_image.resize((163,182))  # optional
